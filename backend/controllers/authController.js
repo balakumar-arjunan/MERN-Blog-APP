@@ -45,4 +45,51 @@ const signup = async (req, res, next) => {
   }
 };
 
-module.exports = { signup };
+const signin = async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password || email === "" || password === "") {
+      next(errorHandler(400, "All fields are required"));
+    }
+
+    // check if the user exists
+    const validUser = await User.findOne({ email });
+
+    if (!validUser) {
+      next(errorHandler(400, "User not found"));
+    }
+
+    // check if the password is correct
+    const passwordCorrect = await bcrypt.compare(password, validUser.password);
+
+    if (!passwordCorrect) {
+      return next(errorHandler(400, "Invalid password"));
+    }
+
+    // create and assign a token
+    const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    const { password: pass, ...rest } = validUser._doc;
+
+    // Send token in httpOnly cookie
+    res.cookie("access_token", token, {
+      path: "/",
+      httpOnly: true,
+      expires: new Date(Date.now() + 1000 * 86400), // 1 day
+      sameSite: "none",
+      secure: true,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: rest,
+      message: "User logged in successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin };
