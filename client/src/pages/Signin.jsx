@@ -3,13 +3,18 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "./../api/axiosInstance";
 import { API_PATHS } from "../api/axiosPaths";
+import {
+  signInStart,
+  signInSuccess,
+  signInError,
+} from "../redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const Signin = () => {
   const [formData, setFormData] = useState({});
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
-
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
@@ -17,31 +22,29 @@ const Signin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage(null); // Reset previous errors
 
     if (!formData.email || !formData.password) {
-      return setErrorMessage("Please fill out all fields.");
+      return dispatch(signInError("Please fill out all fields."));
     }
 
     try {
-      setLoading(true);
+      dispatch(signInStart());
       const response = await axiosInstance.post(
         API_PATHS.AUTH_SIGNIN,
         formData
       );
-      setLoading(false);
       if (response?.data?.success === false) {
-        return setErrorMessage(response?.data?.message);
+        dispatch(signInError(response?.data?.message || "Sign-in failed"));
       }
+      dispatch(signInSuccess(response?.data));
       navigate("/");
     } catch (error) {
       console.error("Signup error:", error.response?.data || error.message);
-      // Set error message from server response
-      setErrorMessage(
+      // Extract error message properly
+      const errorMsg =
         error.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
-      setLoading(false);
+        "Something went wrong. Please try again.";
+      dispatch(signInError(errorMsg));
     }
   };
 
