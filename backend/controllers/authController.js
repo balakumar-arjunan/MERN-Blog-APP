@@ -63,7 +63,7 @@ const signin = async (req, res, next) => {
     const passwordCorrect = await bcrypt.compare(password, validUser.password);
 
     if (!passwordCorrect) {
-      return next(errorHandler(400, "Invalid password"));
+      next(errorHandler(400, "Invalid password"));
     }
 
     // create and assign a token
@@ -92,4 +92,73 @@ const signin = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, signin };
+const google = async (req, res, next) => {
+  const { email, name, googlePhotoUrl } = req.body;
+  try {
+    const user = await User.findOne({ email });
+
+    if (user) {
+      // create and assign a token
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+
+      const { password, ...rest } = user._doc;
+
+      // Send HTTP-only cookie
+      res.cookie("token", token, {
+        path: "/",
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 86400), // 1 day
+        sameSite: "none",
+        secure: true,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: rest,
+      });
+    } else {
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(generatedPassword, salt);
+
+      const newUser = new User({
+        username:
+          name.split(" ").join("").toLowerCase() +
+          Math.random().toString(9).slice(-4),
+        email: email,
+        password: hashedPassword,
+        profilePicture: googlePhotoUrl,
+      });
+      await newUser.save();
+
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+
+      const { password, ...rest } = user._doc;
+
+      // Send HTTP-only cookie
+      res.cookie("token", token, {
+        path: "/",
+        httpOnly: true,
+        expires: new Date(Date.now() + 1000 * 86400), // 1 day
+        sameSite: "none",
+        secure: true,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: rest,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin, google };
