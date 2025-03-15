@@ -9,7 +9,7 @@ const rootReducer = combineReducers({
   theme: themeReducer,
 });
 
-const persistConfig = { key: "root", storage, version: 1, whitelist: ["user"] }; // Only persist `user`
+const persistConfig = { key: "root", storage, version: 1 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
