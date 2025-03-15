@@ -84,7 +84,7 @@ const signin = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      data: rest,
+      rest,
       message: "User logged in successfully",
     });
   } catch (error) {
@@ -153,7 +153,7 @@ const google = async (req, res, next) => {
 
       res.status(200).json({
         success: true,
-        data: rest,
+        rest,
       });
     }
   } catch (error) {
