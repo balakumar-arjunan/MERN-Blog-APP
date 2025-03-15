@@ -45,39 +45,40 @@ const Header = () => {
         >
           {theme === "light" ? <FaSun /> : <FaMoon />}
         </Button>
-        <Link to="/sign-in">
-          {currentUser ? (
-            <Dropdown
-              arrowIcon={false}
-              inline
-              label={
-                <Avatar
-                  alt="user"
-                  img={currentUser?.data?.profilePicture}
-                  rounded
-                />
-              }
-            >
-              <Dropdown.Header>
-                <span className="block text-sm">
-                  {currentUser?.data?.username}
-                </span>
-                <span className="block text-sm font-medium truncate">
-                  {currentUser?.data?.email}
-                </span>
-              </Dropdown.Header>
-              <Link to={"/dashboard?tab=profile"}>
-                <Dropdown.Item>Profile</Dropdown.Item>
-              </Link>
-              <Dropdown.Divider />
-              <Dropdown.Item>Sign out</Dropdown.Item>
-            </Dropdown>
-          ) : (
-            <Button gradientDuoTone="greenToBlue" pill outline>
+
+        {currentUser ? (
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={
+              <Avatar
+                alt="user"
+                img={currentUser?.data?.profilePicture}
+                rounded
+              />
+            }
+          >
+            <Dropdown.Header>
+              <span className="block text-sm">
+                {currentUser?.data?.username}
+              </span>
+              <span className="block text-sm font-medium truncate">
+                {currentUser?.data?.email}
+              </span>
+            </Dropdown.Header>
+            <Link to={"/dashboard?tab=profile"}>
+              <Dropdown.Item>Profile</Dropdown.Item>
+            </Link>
+            <Dropdown.Divider />
+            <Dropdown.Item>Sign out</Dropdown.Item>
+          </Dropdown>
+        ) : (
+          <Link to="/sign-in">
+            <Button gradientDuoTone="greenToBlue" outline>
               Sign In
             </Button>
-          )}
-        </Link>
+          </Link>
+        )}
         <Navbar.Toggle />
       </div>
 
